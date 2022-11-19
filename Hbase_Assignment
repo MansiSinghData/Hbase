@@ -1,0 +1,90 @@
+dataset Link:  https://github.com/MansiSinghData/Hive/blob/main/sales_order_data.csv
+
+CREATING HBASE TABLE HANDLED BY HIVE
+
+
+
+Step1:
+
+creating a Hbase table based on structure of Sales.csv data
+
+create'Hbase_sales_data','ORDER_NUMBER','QUANTITY_ORDERED','PRICE_EACH','ORDER_LINE_NUMBER','SALES','STATUS','QTR_ID','MONTH_ID','YEAR_ID','PRODUCT_LINE','MSRP','CODE','PHONE','CITY','STATE','POSTAL_CODE','COUNTRY','TERRITORY','CONTACT_LAST_NAME','CONTACT_FIRSTNAME','DEALSIZE'
+
+
+Step2:
+
+create EXTERNAL TABLE IF NOT EXISTS sales_order_csv_stg
+(
+ORDER_NUMBER int,
+QUANTITY_ORDERED int,
+PRICE_EACH float,
+ORDER_LINE_NUMBER int,
+SALES float,
+STATUS string,
+QTR_ID int,
+MONTH_ID int,
+YEAR_ID int,
+PRODUCT_LINE string,
+MSRP int,
+PRODUCT_CODE string,
+PHONE string,
+CITY string,
+STATE string,
+POSTAL_CODE string,
+COUNTRY string,
+TERRITORY string,
+CONTACT_LAST_NAME string,
+CONTACT_FIRST_NAME string,
+DEAL_SIZE string
+)
+row format delimited
+fields terminated by ','
+tblproperties("skip.header.line.count"="1")
+; 
+
+Step 3: Loading data in sales_order_csv_stg
+
+load data inpath '/Mansi/sales_order_data.csv' into table sales_order_csv_stg;
+
+Step4:
+CREATE EXTERNAL TABLE IF not exists sales_order_csv_hbase_hive
+(
+ORDER_NUMBER int,
+QUANTITY_ORDERED int,
+PRICE_EACH float,
+ORDER_LINE_NUMBER int,
+SALES float,
+STATUS string,
+QTR_ID int,
+MONTH_ID int,
+YEAR_ID int,
+PRODUCT_LINE string,
+MSRP int,
+PRODUCT_CODE string,
+PHONE string,
+CITY string,
+STATE string,
+POSTAL_CODE string,
+COUNTRY string,
+TERRITORY string,
+CONTACT_LAST_NAME string,
+CONTACT_FIRST_NAME string,
+DEAL_SIZE string
+)
+row format delimited
+fields terminated by ',' 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,QUANTITY_ORDERED:QUANTITY_ORDERED, PRICE_EACH:PRICE_EACH,ORDER_LINE_NUMBER:ORDER_LINE_NUMBER,SALES:SALES,
+STATUS:STATUS,QTR_ID:QTR_ID,MONTH_ID:MONTH_ID,YEAR_ID:YEAR_ID,PRODUCT_LINE:PRODUCT_LINE,
+MSRP:MSRP,PRODUCT_CODE:PRODUCT_CODE,PHONE:PHONE,CITY:CITY,STATE:STATE,POSTAL_CODE:POSTAL_CODE,
+COUNTRY:COUNTRY,TERRITORY:TERRITORY, CONTACT_LAST_NAME:CONTACT_LAST_NAME,CONTACT_FIRST_NAME:CONTACT_FIRST_NAME,DEAL_SIZE:DEAL_SIZE") TBLPROPERTIES("hbase.table.name"="Hbase_sales_data")
+
+Step5: Load Data into sales_order_csv_hbase_hive from sales_order_csv_stg
+
+insert into table sales_order_csv_hbase_hive select * from sales_order_csv_stg;
+
+
+step6:Check the data if populated
+
+select * from sales_order_csv_hbase_hive   ---------->in hive Terminal
+
+scan 'Hbase_sales_data'---------------->from hive terminal
